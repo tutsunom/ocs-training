@@ -1,9 +1,11 @@
+
 = ハンズオン: OpenShift Container Storageのデプロイと管理
-:toc: right
+//:toc: left
 :toclevels: 2
 :icons: font
-:source-highlighter: pygments
-//:source-language: shell
+:source-highlighter: coderay
+:coderay-linenums-mode: inline
+:source-language: shell
 :numbered:
 // Activate experimental attribute for Keyboard Shortcut keys
 :experimental:
@@ -27,13 +29,11 @@ image::imgs/OCS-Pods-Diagram.png[Showing OCS4 pods]
 
 [[labexercises]]
 
-== OCS Operatorを使用してストレージバックエンドをデプロイする
+== OCS Operatorを使用してCephストレージバックエンドをデプロイする
 
 === OCPクラスターをスケールして3つの新しいノードを追加する
 
 このセクションでは、OCSリソース用に3つのworker nodeを追加してします。まず最初にOCP環境に3つのmaster nodeと3つのworker nodeがあることを確認します。
-
-#あなたのmaster nodeおよびworker nodesの名前は下記とは異なります。
 
 ----
 oc get nodes
@@ -49,15 +49,14 @@ ip-10-0-162-186.us-east-2.compute.internal   Ready    worker   75m   v1.14.6+9fb
 ip-10-0-163-84.us-east-2.compute.internal    Ready    master   82m   v1.14.6+9fb2d5cf9
 ----
 
-ここで、 *machinesets* を使用して、さらに3つのOCP worker nodeをクラスターに追加します。まず下記のコマンドで既存の *machinesets* を確認します。
+ここで、 machinesets を使用して、さらに3つのOCP worker nodeをクラスターに追加します。まず下記のコマンドで既存の machinesets を確認します。
 ----
 oc get machinesets -n openshift-machine-api
 ----
 
-AWS AZ(us-east-2a、us-east-2b、us-east-2c)ごとに *machinesets* があることがわかります。
+AWS AZ(us-east-2a、us-east-2b、us-east-2c)ごとに machinesets があることがわかります。
 
-#あなたの *machinesets* の名前は下記とは異なります。
-
+.出力例:
 ----
 NAME                                         DESIRED   CURRENT   READY   AVAILABLE   AGE
 cluster-tokyo-0f59-7kg4m-worker-us-east-2a   1         1         1       1           83m
@@ -65,15 +64,15 @@ cluster-tokyo-0f59-7kg4m-worker-us-east-2b   1         1         1       1      
 cluster-tokyo-0f59-7kg4m-worker-us-east-2c   1         1         1       1           83m
 ----
 
-それではOCSで利用する *machinesets* を追加します。次のコマンドを実行してください。
+OCSで利用する machinesets を追加します。次のコマンドを実行します。
 
 ----
 CLUSTERID=$(oc get machineset -n openshift-machine-api -o jsonpath='{.items[0].metadata.labels.machine\.openshift\.io/cluster-api-cluster}')
 echo $CLUSTERID
-curl -s https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/cluster-workerocs.yaml | sed "s/CLUSTERID/$CLUSTERID/g" | oc apply -f -
+curl -s https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/cluster-workerocs-us-east-2.yaml | sed "s/CLUSTERID/$CLUSTERID/g" | oc apply -f -
 ----
 
-新しい *machines* が作成されていることを確認します。
+新しい machines が作成されていることを確認します。
 
 ----
 watch oc get machines -n openshift-machine-api
@@ -81,7 +80,7 @@ watch oc get machines -n openshift-machine-api
 
 全てのmachinesのSTATEが `running` になるまで待ちます。
 
-#あなたの *machines* の名前は下記とは異なります。
+.出力例:
 ----
 NAME                                                  STATE     TYPE         REGION      ZONE         AGE
 cluster-tokyo-0f59-7kg4m-master-0                     running   m4.xlarge    us-east-2   us-east-2a   43m
@@ -96,18 +95,16 @@ cluster-tokyo-0f59-7kg4m-workerocs-us-east-2c-bxdvr   running   m4.4xlarge   us-
 ----
 kbd:[Ctrl+C]を押すと終了できます。
 
-workerocs *machines* が使用しているAWS EC2インスタンスタイプは `m4.4xlarge` であることがわかります。
+workerocs machines が使用しているAWS EC2インスタンスタイプは `m4.4xlarge` であることがわかります。
 `m4.4xlarge` インスタンスタイプは16 vCPUと64GB MEMのリソースを持ちますが、これはOCSで推奨されるスペックです。
 
-次に、新しいmachinesetsがOCPクラスターに追加されていることを確認します。
-
+次に、新しい machinesets がOCPクラスターに追加されていることを確認します。
 ----
 watch oc get machinesets -n openshift-machine-api
 ----
-先に進む前に、このコマンドの結果が以下のようになっている必要があります。
-全ての新しいworkerocs machinesetsの `READY` と `AVAILABLE` のカラムに数値(この場合は`1`)が表示されている必要があります。
-このステップには5分以上かかる場合があります。
-#あなたの *machinesets* の名前は下記とは異なります。
+新しく作られた workerocs machinesets の全てで `READY` と `AVAILABLE` のカラムに数値(この場合は`1`)が表示されるまで待ちます。このステップには5分以上かかる場合があります。
+
+.出力例:
 ----
 NAME                                            DESIRED   CURRENT   READY   AVAILABLE   AGE
 cluster-tokyo-0f59-7kg4m-worker-us-east-2a      1         1         1       1           62m
@@ -120,9 +117,6 @@ cluster-tokyo-0f59-7kg4m-workerocs-us-east-2c   1         1         1       1   
 kbd:[Ctrl+C]を押すと終了できます。
 
 次に、3つの新しいOCP worker nodeがあることを確認します。
-
-#あなたのOCPノードの名前は下記とは異なります。
-
 
 ----
 oc get nodes -l node-role.kubernetes.io/worker
@@ -142,54 +136,42 @@ ip-10-0-172-190.us-east-2.compute.internal   Ready    worker   99s    v1.14.6+9f
 === OCS Operatorのインストール
 
 このセクションでは、OperatorHubのOCS Operatorを使用して新しく追加した3つのworker nodeにOCSをデプロイします。
+
 OCSのデプロイによって以下がインストールされます。
 
 - OCS OperatorのGroupsとsources
 - OCS Subscription
 - すべてのOCSリソース (Operators, Ceph pods, Noobaa pods, StorageClasses)
 
-はじめに `openshift-storage` namespace を作成します。
-
-
-----
-oc create namespace openshift-storage
-----
-
-このnamespaceにモニタリングラベルを追加する必要があります。
-これはOCPストレージダッシュボードでPrometheusメトリクスとアラートを取得するために必要です。
-`openshift-storage` namespaceにラベルを付けるには、次のコマンドを使用します。
-
+==== OCSが利用する namespace の作成
+はじめに `openshift-storage` namespace を作成します。次のコマンドを実行します。
 
 ----
-oc label namespace openshift-storage "openshift.io/cluster-monitoring=true"
+oc apply -f https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/rhocs-namespace.yaml
 ----
 
+NOTE: `openshift-storage` namespaceは、Web Consoleや `oc create namespace` コマンドで作成しても構いません。ただし、OCPストレージダッシュボードでPrometheusメトリクスとアラートを取得するために、 `openshift-storage` namespaceに `cluster-monitoring=true` のラベルを付けて下さい。
+
+==== OCP OperatorHubからOCS Operatorをインストール
 次にOperatorHubからOCS Operatorをインストールします。
-OCS 4はまだ正式リリースとなっていないため、OperatorHubには表示されていません。
-OCS OperatorをOperatorHubに表示させるために、次を実行してマニフェストを適用します。
 
-
-----
-oc apply -f https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/deploy-with-olm.yaml
-----
-
-NOTE: OCS 4のリリース後はOCS OperatorがOperatorHubに表示されるため、このマニフェストファイルの適用は必要ありません。
-
-画面を *Openshift Web Console* に切り替えます。
-ログインしたら、 *OperatorHub* メニューに移動します。
+画面を Openshift Web Console に切り替えます。ログインしたら、左側の `Operators` メニューに移動して、 `OperatorHub` を選択します。 
 
 .OCP OperatorHub
 image::imgs/OCS-OCP-OperatorHub.png[OCP OperatorHub]
 
+
 *Filter by _keyword..._* のボックスに、 `container storage` と入力すると、 `OpenShift Container Storage Operator` が表示されます。
+
 
 .OpenShift Container Storage Operator
 image::imgs/OCS-OCP-OperatorHub-Filter.png[OCP OperatorHub Filter]
 
-`OpenShift Container Storage Operator` を選択し、 *Install* ボタンを押します。
+表示された `OpenShift Container Storage Operator` を選択し、 *Install* ボタンを押します。
 
 .OpenShift Container Storageのインストール
 image::imgs/OCS-OCP-OperatorHub-Install.png[OCP OperatorHub Install]
+
 
 次の画面で、設定がこの図に示すとおりであることを確認します。
 必ず `Installation Mode` を `A specific namespace on the cluster` に変更し、 `openshift-storage` namespaceを選択して下さい。
@@ -198,28 +180,28 @@ image::imgs/OCS-OCP-OperatorHub-Install.png[OCP OperatorHub Install]
 .OpenShift Container StorageのSubscrbe
 image::imgs/OCS-OCP-OperatorHub-Subscribe.png[OCP OperatorHub Subscribe]
 
-ターミナルに戻ってOCSのインストールの進行状況を確認できます。
-
+ターミナルに戻って次のコマンドでOCSのインストールの進行状況を確認できます。
 
 ----
-watch oc -n openshift-storage get csv
+watch oc get csv -n openshift-storage
 ----
 .出力例:
 ----
-NAME                    DISPLAY                                VERSION   REPLACES   PHASE
-ocs-operator.v0.0.273   Openshift Container Storage Operator   0.0.273              Succeeded
+NAME                  DISPLAY                       VERSION   REPLACES   PHASE
+ocs-operator.v4.2.0   OpenShift Container Storage   4.2.0                Succeeded
 ----
-`csv` は、 `clusterserviceversions.operators.coreos.com` の短縮形です。
 
 kbd:[Ctrl+C]を押すと終了できます。
 
+NOTE: `csv` は、 `clusterserviceversions.operators.coreos.com` の短縮形です。
+
 CAUTION: Operatorの `PHASE` が `Succeeded` に変わるまで待って下さい。変わるまで数分かかる場合があります。
 
-いくつかの新しいOperator podが `openshift-storage` namespaceに作成されています。
+いくつかの新しいOperator podが `openshift-storage` namespaceに作成されていることが確認できます。
 
 
 ----
-oc -n openshift-storage get pods
+oc get pods -n openshift-storage
 ----
 .出力例:
 ----
@@ -235,11 +217,11 @@ Openshift Web Consoleに戻ります。左側の `Operators` メニューに移�
 .Installed Operators
 image::imgs/OCP-installed-operators.jpg[Openshift showing the installed operators in namespace openshift-storage]
 
-[cols="0,1,10a"]
+[cols="0,10a"]
 |===
-|① ||`openshift-storage` プロジェクトにいることを確認
-|② || Operatorのステータスを確認
-|③ || Openshift Container Storage Operatorをクリック
+|① |`openshift-storage` プロジェクトにいることを確認
+|② | Operatorのステータスを確認
+|③ | Openshift Container Storage Operatorをクリック
 |===
 
 `Openshift Container Storage Operator` をクリックしてOCS 4の構成画面に移動します。
@@ -258,22 +240,18 @@ image::imgs/OCS-config-screen-storage-cluster.png[OCS Create Storage Cluster]
 .新しいOCSストレージクラスターの作成
 image::imgs/OCS-config-screen-new.png[OCS create a new storage cluster]
 
-CAUTION: *以下の手順を使用して、3つの異なるAvailability Zoneのworker nodeを選択してください。*
-
-適切なworker nodeを選択するには、`role=storage-node`ノードラベルを検索して見つけることができます。
-
-
+ここで、*3つの異なるAvailability Zoneのworker nodeを選択してください。*
+適切なworker nodeを選択するには、次のコマンドで`role=storage-node` ラベルを検索して見つけることができます。
 ----
 oc get nodes --show-labels | grep storage-node |cut -d' ' -f1
 ----
-
 上記のコマンドで表示された3つのworker nodeのチェックボックスをマークします。
 
 NOTE: worker nodeに `role=storage-node` ラベルがない場合は、OCSノードの推奨要件(16 vCPU, 64GB MEM)を満たす、3つの異なるAvailability Zoneのworker nodeを選択します。
 `Storage Cluster` のノードリストで簡単に見つけられるように、この手順の前に使用されるworker nodeに一意のラベルを追加することをお勧めします。(この場合は `role=storage-node`　)
 
-`Create` をクリックするとOCSストレージクラスターの作成が始まり、`openshift-storage` namespaceで多くの新しいpodが作成されます。
-その前にターミナルで次のコマンドを実行しておくと、次々とpodが作成される様子が確認できます。
+*Create* をクリックするとOCSストレージクラスターの作成が始まり、`openshift-storage` namespaceで多くの新しいpodが作成されます。
+その前にターミナルで次のコマンドを実行しておくと、次々とPodが作成される様子が確認できます。
 
 
 ----
@@ -306,7 +284,6 @@ rook-ceph-operator-5dc5f9d7fb-zd7qs             1/1     Running             0   
 ----
 
 ターミナルですべてのPodのSTATUSが `Running` になるとインストールは完了です。
-
 
 ----
 oc -n openshift-storage get pods
@@ -437,7 +414,7 @@ ceph df
 rados df
 ceph versions
 ----
-.Example output:
+.出力例:
 [source]
 ----
 sh-4.2# ceph status
@@ -517,10 +494,6 @@ kbd:[Ctrl+C] を押すと終了できます。
 
 デプロイが完了したら、CephでアプリケーションとPersistent Volumeをテストできます。
 
-#あなたの `HOST/PORT` は下記とは異なります。
-
-
-
 ----
 oc get route -n my-database-app
 ----
@@ -572,7 +545,7 @@ Persistent VolumeとCeph RBDを同定するには、次のコマンドを実行�
 ----
 oc get pv -o 'custom-columns=NAME:.spec.claimRef.name,PVNAME:.metadata.name,STORAGECLASS:.spec.storageClassName,VOLUMEHANDLE:.spec.csi.volumeHandle'
 ----
-.Example output:
+.出力例:
 ----
 NAME                      PVNAME                                     STORAGECLASS                  VOLUMEHANDLE
 ocs-deviceset-0-0-z2xzg   pvc-1b636a3f-f978-11e9-9bdd-005056818b15   thin                          <none>
@@ -611,7 +584,7 @@ TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name)
 
 oc rsh -n openshift-storage $TOOLS_POD rbd -p ocs-storagecluster-cephblockpool info csi-vol-39787034-fbcd-11e9-8be1-0a580a810213
 ----
-.Example output:
+.出力例:
 ----
 rbd image 'csi-vol-39787034-fbcd-11e9-8be1-0a580a810213':
         size 5 GiB in 1280 objects
@@ -802,8 +775,6 @@ file-uploader-my-shared-storage.apps.cluster-ocs-9b06.ocs-9b06.example.opentlc.c
 
 出力されたURLを使用してブラウザでwebアプリケーションを指定します。
 
-#あなたのRouteは下記とは異なります。
-
 Webアプリは、アップロードされたすべてのファイルをリストし、新しいファイルをアップロードする機能と、
 既存のデータをダウンロードする機能を提供します。今のところ何もありません。
 
@@ -833,7 +804,7 @@ MCGのステータスは、NooBaa CLIで確認できます。
 ----
 noobaa status -n openshift-storage
 ----
-.Example output:
+.出力例:
 ----
 INFO[0000] CLI version: 2.0.9
 INFO[0000] noobaa-image: noobaa/noobaa-core:5.2.11
@@ -1171,8 +1142,6 @@ job.batch/obc-test created
 ----
 
 podが作成、実行され、最終的に `Completed` とマークされることを確認します。
-#あなたのpodの名前は下記とは異なります。
-
 
 ----
 oc get pod -n obc-test -l app=obc-test
@@ -1467,7 +1436,7 @@ client: 1.2 KiB/s rd, 46 KiB/s wr, 2 op/s rd, 4 op/s wr
 ----
 ceph osd crush tree
 ----
-.Example output:
+.出力例:
 ----
 ID  CLASS WEIGHT  TYPE NAME
  -1       5.99396 root default
