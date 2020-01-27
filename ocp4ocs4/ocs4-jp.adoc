@@ -11,18 +11,20 @@
 :experimental:
 
 == 概要
-このハンズオンワークショップは、OpenShift Container Storage(OCS) 4のデプロイおよび管理の方法を学習します。
-対象者はOCS 4に関心のあるシステム管理者とアプリケーション開発者の両方です。
-このハンズオンでは、OCS Operatorを使用してPersistent StorageのソリューションであるCephとMulti-Cloud Gateway(MCG)をOpenShift Container Platform(OCP) 4.2上にデプロイします。
+このハンズオンワークショップは、Red Hat OpenShift Container Storage(OCS) 4のデプロイおよび管理の方法を学習します。 +
+このハンズオンワークショップは、OCS 4に関心のあるシステム管理者、およびアプリケーション開発者の両方を対象者として想定します。 +
+このハンズオンでは、OpenShift Container Storage Operatorを使用して、OpenShift Container Platform(OCP) 4向けの永続ストレージのソリューションである、CephとMulti-Cloud Gateway(MCG)を、OCP 4.2のクラスターにデプロイします。
 
 === このハンズオンで学習する内容
 
-* コンテナ化されたCephとNooBaaをデプロイおよび構成する
-* デプロイされたCephクラスターとNooBaaを確認する
-* Rook toolboxを使って、CephコマンドとRADOSコマンドを実行する
-* Ceph RBDを使用してReadWriteOnce(RWO) PVCを作成、使用する
-* CephFSを使用してReadWriteMany(RWX) PVCを作成、使用する
-* NooBaa Multi-Cloud Gateway(MCG)を使用してObject Bucketを作成する
+* OCS Operatorを使用して、OCPクラスター上にCephクラスターとMCGをデプロイする
+* デプロイされたCephクラスターとMCGを確認する
+* Rook toolboxを使用して、CephコマンドとRADOSコマンドを実行し、構成を確認する
+* Ceph RBDが提供するReadWriteOnce(RWO) PVCを作成し、アプリケーションから使用する
+* CephFSが提供するReadWriteMany(RWX) PVCを作成し、アプリケーションから使用する
+* MCGを使用してObject Bucketを作成し、アプリケーションから使用する
+* 構成したCephクラスターにストレージ容量を追加する
+* OCSのモニタリングを行う
 
 .OpenShift Container Storage コンポーネント
 image::imgs/OCS-Pods-Diagram.png[Showing OCS4 pods]
@@ -30,6 +32,35 @@ image::imgs/OCS-Pods-Diagram.png[Showing OCS4 pods]
 [[labexercises]]
 
 == OCS Operatorを使用してCephストレージバックエンドをデプロイする
+
+=== OCPクラスターをアップデートする
+
+このセクションでは、OCPクラスターのバージョンを確認し、必要があればOCPクラスターをアップデートします。
+
+CAUTION: OCSはOCP 4.2.13以上での利用がサポートされます。 +
+参考リンク : https://access.redhat.com/articles/4731161
+
+
+==== OCPクラスターのバージョンを確認する
+
+OpenShift Web Consoleにログインし、左側の `Administrator` メニューから `Cluster Settings` を選択します。 +
+`OverView` タブの上部にある `Current Version` にOCPクラスターのバージョンが表示されていることを確認します。
+
+.OCP Version
+image::imgs/OCS-OCP-Version.png[OCP Version]
+
+
+NOTE: `oc version` コマンドでも確認可能です。
+
+==== OCPクラスターをアップデートする
+
+前項で確認したOCPクラスターのバージョンが4.2.13以上であればアップデートは必要がありません。 +
+そうでない場合はOCPクラスターのアップデートを行います。``
+OCSリソース用に3つのworker nodeを追加してします。まず最初にOCP環境に3つのmaster nodeと3つのworker nodeがあることを確認します。
+
+
+
+
 
 === OCPクラスターをスケールして3つの新しいノードを追加する
 
@@ -68,7 +99,6 @@ OCSで利用する machinesets を追加します。次のコマンドを実行�
 
 ----
 CLUSTERID=$(oc get machineset -n openshift-machine-api -o jsonpath='{.items[0].metadata.labels.machine\.openshift\.io/cluster-api-cluster}')
-echo $CLUSTERID
 curl -s https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/cluster-workerocs-us-east-2.yaml | sed "s/CLUSTERID/$CLUSTERID/g" | oc apply -f -
 ----
 
@@ -95,8 +125,8 @@ cluster-tokyo-0f59-7kg4m-workerocs-us-east-2c-bxdvr   running   m4.4xlarge   us-
 ----
 kbd:[Ctrl+C]を押すと終了できます。
 
-workerocs machines が使用しているAWS EC2インスタンスタイプは `m4.4xlarge` であることがわかります。
-`m4.4xlarge` インスタンスタイプは16 vCPUと64GB MEMのリソースを持ちますが、これはOCSで推奨されるスペックです。
+workerocs machines が使用しているAWS EC2インスタンスタイプは `m5.4xlarge` であることがわかります。
+`m5.4xlarge` インスタンスタイプは16 vCPUと64GB MEMのリソースを持ちますが、これはOCSで求められる最小のスペックです。
 
 次に、新しい machinesets がOCPクラスターに追加されていることを確認します。
 ----
@@ -139,7 +169,7 @@ ip-10-0-172-190.us-east-2.compute.internal   Ready    worker   99s    v1.14.6+9f
 
 OCSのデプロイによって以下がインストールされます。
 
-- OCS OperatorのGroupsとsources
+- OCS OperatorのGroupsとSources
 - OCS Subscription
 - すべてのOCSリソース (Operators, Ceph pods, Noobaa pods, StorageClasses)
 
@@ -155,7 +185,7 @@ NOTE: `openshift-storage` namespaceは、Web Consoleや `oc create namespace` �
 ==== OCP OperatorHubからOCS Operatorをインストール
 次にOperatorHubからOCS Operatorをインストールします。
 
-画面を Openshift Web Console に切り替えます。ログインしたら、左側の `Operators` メニューに移動して、 `OperatorHub` を選択します。 
+画面を Openshift Web Console に切り替えます。ログインしたら左側の `Operators` メニューに移動して、 `OperatorHub` を選択します。 
 
 .OCP OperatorHub
 image::imgs/OCS-OCP-OperatorHub.png[OCP OperatorHub]
