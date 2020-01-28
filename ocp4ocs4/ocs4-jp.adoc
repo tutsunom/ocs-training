@@ -1374,7 +1374,7 @@ AWSでは、StorageClassに `gp2` を設定する必要があります。
 
 NOTE: OCSは三重でレプリカを取るため、配置される容量は `Requested Capacity` で指定する3倍の容量になります。
 
-設定が完了したら、 `Add` をクリックして続行します。ストレージクラスターのステータスは再び `Ready` になるまで変化します。
+設定が完了したら、 *[Add]* をクリックして続行します。ストレージクラスターのステータスは再び `Ready` になるまで変化します。
 これで新しいOSD podがあり、新しくノードが追加され、それらが新しいOCS worker nodeを使用していることがわかります。
 
 
@@ -1468,7 +1468,7 @@ rgw: 1 daemon active (ocs.storagecluster.cephobjectstore.a)
 data:
 pools: 10 pools, 80 pgs
 objects: 392 objects, 388 MiB
-usage: 6.9 GiB used, 6.0 TiB / 6.0 TiB avail <2>
+usage: 6.9 GiB used, 12.0 TiB / 12.0 TiB avail <2>
 pgs: 80 active+clean
 
 io:
