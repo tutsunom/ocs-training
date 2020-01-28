@@ -972,9 +972,9 @@ S3アドレスはOpenShiftクラスター内で内部的にルーティングす
 
 `first.bucket` というbucketがあることがわかります。これはMCGが構成されるときにデフォルトで作成されるbucketです。
 
-先の `noobaa status` の出力の `Backing Stores` を見てみましょう。MCGのデフォルトのBacking StoreはAWS S3となっています。つまり `first.bucket` は AWS
+先の `noobaa status` の出力の `Backing Stores` を見てみましょう。MCGのデフォルトのBacking StoreはAWS S3となっています。よって `first.bucket` の実体は AWS S3に作成されているbucketです。
 
-Openshift Web ConsoleのObject Service Dashboardを使用することでも、MCGステータスの概要を取得できます。
+ところで、Openshift Web ConsoleのObject Service Dashboardを使用することでも、MCGステータスの概要を取得できます。
 このDashboardではS3 endpointの接続情報を提供しませんが、S3バックエンドの使用に関するグラフとランタイム情報を提供します。
 
 === Object Bucket Claimの作成
