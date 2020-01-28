@@ -1550,7 +1550,7 @@ OCS worker nodeと容量の両方が拡張した場合、古いOSDと新しいOS
 
 このセクションでは、モニタリングに関してOCS 4.2で使用できるさまざまなツールについて説明します。
 
-各種ツールは、OpenShift Web Consoleの左側メニューバーからアクセスできます。 *Monitoring* メニューを展開し、次の3つのアイテムにアクセスします。
+各種ツールは、OpenShift Web Consoleの左側メニューバーからアクセスできます。 `Monitoring` メニューを展開し、次の3つのアイテムにアクセスします。
 
 * Alerting
 * Metrics
@@ -1558,12 +1558,12 @@ OCS worker nodeと容量の両方が拡張した場合、古いOSDと新しいOS
 
 === Alerting
 
-以下のスクリーンキャプチャーに示すように、 *Alerting* アイテムをクリックしてアラートウィンドウを開きます。
+以下のスクリーンキャプチャーに示すように、 `Alerting` をクリックしてアラートウィンドウを開きます。
 
 .Monitoring メニュー
 image::imgs/metrics-alertingleftpanemenu.png[OCP Monitoring Menu]
 
-これにより、以下に示すように *Alerting* のページに移動します。
+これにより、以下に示すように `Alerting` のページに移動します。
 
 .Alerting ページ
 image::imgs/metrics-alertinghomepage.png[OCP Alerting Homepage]
@@ -1603,16 +1603,16 @@ image::imgs/metrics-alertingcontextualmenu.png[OCP Alert Contextual Menu]
 image::imgs/metrics-alertingviewrule.png[OCP Alert Detailed Display]
 
 NOTE: 必要に応じて、アラートに埋め込まれたPrometheusクエリをクリックできます。
-これを行うと *Metrics* ページに移動し、アラートを実行やアラートの更新をテストすることができます。
+これを行うと `Metrics` ページに移動し、アラートを実行やアラートの更新をテストすることができます。
 
 === Metrics
 
-以下に示すように、 *Metrics* アイテムをクリックします。
+以下に示すように、 `Metrics` をクリックします。
 
 .メトリクスメニュー
 image::imgs/metrics-metricsleftpanemenu.png[OCP Metrics Menu]
 
-これにより *Metrics* のページに移動します。
+これにより `Metrics` のページに移動します。
 
 .メトリクスのページ
 image::imgs/metrics-queryfield.png[OCP Monitoring Metrics Homepage]
@@ -1643,7 +1643,7 @@ image::imgs/metrics-complexcephquery.png[Ceph Complex Query]
 .Cephグラフ
 image::imgs/metrics-complexcephgraph.png[Ceph Complex Graph]
 
-すべてのOCPメトリクス、統合された *Metrics* ウィンドウからも利用できます。
+すべてのOCPメトリクスが統合された Metrics ウィンドウからも利用できます。
 例えば、 `process_cpu_seconds_total` のようなOCP関連のメトリクスを試してみます。
 
 .より複雑なOCPグラフ
