@@ -1684,12 +1684,12 @@ lab-user@bastion.tokyo-6e88.sandbox916.opentlc.com's password: r3dh4t1!
 === NooBaa CLIのインストールと確認
 NooBaa CLIをインストールするには、bastionサーバーで次の手順を実行します。
 ----
-curl -s https://api.github.com/repos/noobaa/noobaa-operator/releases/latest | grep "linux" | cut -d : -f 2,3 | tr -d \" | wget -qi - ; mv noobaa-linux-* noobaa ; chmod +x noobaa; sudo mv noobaa /usr/bin/
+[lab-user@clientvm 0 ~]$ curl -s https://api.github.com/repos/noobaa/noobaa-operator/releases/latest | grep "linux" | cut -d : -f 2,3 | tr -d \" | wget -qi - ; mv noobaa-linux-* noobaa ; chmod +x noobaa; sudo mv noobaa /usr/bin/
 ----
 
 次のコマンドを使用して、NooBaa CLIのインストールが成功したことを確認します。
 ----
-noobaa version
+[lab-user@clientvm 0 ~]$ noobaa version
 ----
 .出力例:
 ----
@@ -1700,7 +1700,7 @@ INFO[0000] operator-image: noobaa/noobaa-operator:2.0.9
 
 [NOTE]
 ====
-上記のコマンドでは常に最新バージョンのNooBaa CLIをPullするため、あなたの出力は出力例のバージョンよりも高い場合があります。
+上記のコマンドでは常に最新バージョンのNooBaa CLIをPullするため、出力例のバージョンよりも高い場合があります。
 ====
 
 [appendix]
