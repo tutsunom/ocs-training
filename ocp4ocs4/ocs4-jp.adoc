@@ -984,7 +984,7 @@ OBCを作成すると、アプリケーションがオブジェクトストレ�
 
 OBCの作成はNooBaa CLIを利用することで簡単に行えます。
 ----
-noobaa obc create test21obc -n openshift-storage
+[lab-user@clientvm 0 ~]$ noobaa obc create test21obc -n openshift-storage
 ----
 .出力例:
 ----
