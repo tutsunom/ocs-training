@@ -1492,18 +1492,18 @@ ceph osd crush tree
 ----
 ID  CLASS WEIGHT  TYPE NAME
  -1       5.99396 root default
- -5       5.99396     region us-east-1
- -4       1.99799         zone us-east-1a
+ -5       5.99396     region us-east-2
+ -4       1.99799         zone us-east-2a
  -3       0.99899             host ocs-deviceset-2-0-cx2vg
   0   ssd 0.99899                 osd.0
 -19       0.99899             host ocs-deviceset-2-1-4j7fb <1>
   5   ssd 0.99899                 osd.5
--10       1.99799         zone us-east-1b
+-10       1.99799         zone us-east-2b
  -9       0.99899             host ocs-deviceset-1-0-s87kw
   1   ssd 0.99899                 osd.1
 -21       0.99899             host ocs-deviceset-1-1-2rjn6 <1>
   4   ssd 0.99899                 osd.4
--14       1.99799         zone us-east-1c
+-14       1.99799         zone us-east-2c
 -13       0.99899             host ocs-deviceset-0-0-chvdn
   2   ssd 0.99899                 osd.2
 -17       0.99899             host ocs-deviceset-0-1-pt9ts <1>
@@ -1512,8 +1512,7 @@ ID  CLASS WEIGHT  TYPE NAME
 
 <1> worker nodeが追加されたことで、それぞれの `zone` の中で `host` が拡張されている
 
-CephクラスターのデフォルトのCRUSHルールは、 `zone` でデータを複製するように設定されているため、
-追加前のノードの負荷を緩和するために効果的な方法です。
+CephクラスターのデフォルトのCRUSHルールは、 `zone` でデータを複製するように設定されているため、追加前のノードの負荷を緩和するために効果的な方法です。
 
 worker nodeと容量の両方が拡張した場合、古いOSDと新しいOSDが負荷を共有するように、古いOSDにある既存のデータは新しいOSDへ自動的にリバランスされます。
 
