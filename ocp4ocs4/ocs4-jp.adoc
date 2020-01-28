@@ -121,7 +121,7 @@ kbd:[Ctrl+C]を押すと終了できます。
 次に、新しいmachinesが作られていることを確認します。全てのmachinesの `STATE` が `running` であることを確認します。
 
 ----
-get machines -n openshift-machine-api
+oc get machines -n openshift-machine-api
 ----
 .出力例:
 ----
@@ -457,13 +457,57 @@ sh-4.2$ ceph status
   data:
     pools:   3 pools, 24 pgs
     objects: 92 objects, 77 MiB
-    usage:   3.1 GiB used, 6.0 TiB / 6.0 TiB avail
+    usage:   3.1 GiB used, 6.0 TiB / 6.0 TiB avail<1>
     pgs:     24 active+clean
  
   io:
     client:   853 B/s rd, 6.3 KiB/s wr, 1 op/s rd, 0 op/s wr
+
+sh-4.2$ ceph osd status
++----+--------------------------------------------+-------+-------+--------+---------+--------+---------+-----------+
+| id |                    host                    |  used | avail | wr ops | wr data | rd ops | rd data |   state   |
++----+--------------------------------------------+-------+-------+--------+---------+--------+---------+-----------+
+| 0  | ip-10-0-141-253.us-east-2.compute.internal  | 1036M | 2045G |    0   |  1638   |    2   |   106   | exists,up |
+| 1  | ip-10-0-151-3.us-east-2.compute.internal | 1036M | 2045G |    0   |     0   |    0   |     0   | exists,up |
+| 2  | ip-10-0-172-190.us-east-2.compute.internal  | 1036M | 2045G |   12   |   120k  |    0   |     0   | exists,up |
++----+--------------------------------------------+-------+-------+--------+---------+--------+---------+-----------+
+sh-4.2$ ceph osd tree  
+ID  CLASS WEIGHT  TYPE NAME                                STATUS REWEIGHT PRI-AFF 
+ -1       5.99698 root default                                                     
+ -5       5.99698     region us-east-2                                             
+-14       1.99899         zone us-east-2a                                          
+-13       1.99899             host ocs-deviceset-2-0-qdwg4                         
+  2   ssd 1.99899                 osd.2                        up  1.00000 1.00000 
+ -4       1.99899         zone us-east-2b                                          
+ -3       1.99899             host ocs-deviceset-0-0-nqnmw                         
+  1   ssd 1.99899                 osd.1                        up  1.00000 1.00000 
+-10       1.99899         zone us-east-2c                                          
+ -9       1.99899             host ocs-deviceset-1-0-vzrdn                         
+  0   ssd 1.99899                 osd.0                        up  1.00000 1.00000 
+
 ----
 kbd:[Ctrl+D] を押すか、 `exit` を実行してtoolboxから出ることができます.
+
+この出力より、このCephクラスターは3つのOSDノードにそれぞれ2 TiBのOSDが1つずつあり、合計で6 TiBの物理容量を持つことがわかります。
+
+これらのOSDは、`rook-ceph-osd` Podにアタッチされている、Persistent Volumeです。次のコマンドを実行して確認します。
+
+----
+oc get pvc -n openshift-storage
+NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                  AGE
+db-noobaa-core-0          Bound    pvc-74ca0f8a-417c-11ea-a420-0a65cd768686   50Gi       RWO            ocs-storagecluster-ceph-rbd   7m13s
+ocs-deviceset-0-0-nqnmw   Bound    pvc-5366cde3-417c-11ea-b632-022d53c84a06   2Ti        RWO            gp2                           8m9s
+ocs-deviceset-1-0-vzrdn   Bound    pvc-53685084-417c-11ea-b632-022d53c84a06   2Ti        RWO            gp2                           8m9s
+ocs-deviceset-2-0-qdwg4   Bound    pvc-5369feae-417c-11ea-b632-022d53c84a06   2Ti        RWO            gp2                           8m9s
+rook-ceph-mon-a           Bound    pvc-f5571284-417b-11ea-b632-022d53c84a06   10Gi       RWO            gp2                           10m
+rook-ceph-mon-b           Bound    pvc-f8af7f4f-417b-11ea-b632-022d53c84a06   10Gi       RWO            gp2                           10m
+rook-ceph-mon-c           Bound    pvc-fbb0a32c-417b-11ea-b632-022d53c84a06   10Gi       RWO            gp2                           10m
+----
+
+`ceph osd tree` の出力で表示される `host` の名前が、それぞれ PVC の名前と一致していることがわかります。また、これらのPVCのStorageClassはAWS環境のOpenShiftでデフォルトの `gp2` となっています。
+
+このように、OCSではストレージデバイスを、OCPクラスターが稼働するプラットフォームのデフォルトのStorageClassで PVC として求め、それらをOCS worker nodeで走る `rook-ceph-osd` Podにとしてアタッチし、Cephクラスターを構成しています。 +
+なお、`rook-ceph-osd` PodはPVCを *Raw Block* の volumeMode でアタッチしています。
 
 == Ceph RBDボリュームを使用してOCPアプリケーションをデプロイする
 このセクションでは、`ocs-storagecluster-ceph-rbd` StorageClassを使ってRWO(ReadWriteOnce) Presistent Volumeを作成し、RailsアプリケーションとPostgreSQLデータベースをデプロイします。 +
@@ -774,7 +818,7 @@ Webアプリは、アップロードされたすべてのファイルをリス�
 image::imgs/uploader_screen_upload.png[PHP base file uploader]
 
 完了したら、*List uploaded files* をクリックして、現在アップロードされているすべてのファイルのリストを表示します。 +
-また、先のコマンドで確認したfile-uploader Podのmount pathに同じファイルが保存されていることを確認します。
+また、先のコマンドで確認したfile-uploader Podのmount pathに同じファイルが保存されていることを確認してみましょう。
 ----
 oc exec -it file-uploader-2-wzxct -n my-shared-storage ls /opt/app-root/src/uploaded
 oc exec -it file-uploader-2-z45qg -n my-shared-storage ls /opt/app-root/src/uploaded
@@ -784,22 +828,19 @@ oc exec -it file-uploader-2-zkrqh -n my-shared-storage ls /opt/app-root/src/uplo
 
 == Multi-Cloud Gatewayの使用
 
-このセクションでは、Multi-Cloud Gateway (MCG)の使用方法について説明します。
+このセクションでは、Multi-Cloud Gateway (MCG)について説明します。はじめに
 MCGのインストールが正常に完了していることを確認して下さい。
 
 現在、MCGを構成する最良の方法は、CLIを使用することです。
 CLIをインストールするには、 <<NooBaa CLIクライアントをインストールする>> セクションにしたがって下さい。
 
-NOTE: NooBaa Web Management Console はアクセス可能ですが、現在Openshiftクラスターに同期されていないため、リソースの作成には使用しないでください。
+CAUTION: GUIであるNooBaa Web Management Consoleは利用可能です。GUIを使ってリソースを作成してもOpenShift Web Consoleには同期されないため、使用しないことを推奨します。
 
 === MCGステータスの確認
 
-MCGのステータスは、NooBaa CLIで確認できます。
-このコマンドを実行するときは `openshift-storage` プロジェクトにいることを確認して下さい。
-
-
+MCGのステータスはNooBaa CLIで確認できます。bastionサーバーにログインして、次のコマンドを実行します。このコマンドを実行するときは `openshift-storage` namespaceを指定してください。
 ----
-noobaa status -n openshift-storage
+[lab-user@clientvm 0 ~]$ noobaa status -n openshift-storage
 ----
 .出力例:
 ----
@@ -901,9 +942,37 @@ noobaa-default-bucket-class   {Tiers:[{Placement: BackingStores:[noobaa-default-
 No OBC's found.
 ----
 
-この通り、NooBaa CLIは最初に環境をチェックし、次に環境に関するすべての情報を出力します。
-MCGのステータスに加えて、MCG bucketへの接続に使用できる使用可能なS3アドレスが表示されます。
-DNSトラフィックコストが発生する外部DNSを使用するか、Openshiftクラスター内で内部的にルーティングするかを選択できます。
+NooBaa CLIは最初に環境をチェックし、次に環境に関するすべての情報を出力します。MCGのステータスに加えて、MCG bucketへの接続に使用できる使用可能なS3アドレスとS3クレデンシャルが表示されます。 +
+S3アドレスはOpenShiftクラスター内で内部的にルーティングするか、外部DNSを使用するかを選択できます。 +
+これらの情報をbastionサーバーで環境変数としてexportしておきます。
+
+----
+[lab-user@clientvm 0 ~]$ export AWS_ACCESS_KEY_ID=<Your AWS_ACCESS_KEY_ID>
+[lab-user@clientvm 0 ~]$ export AWS_SECRET_ACCESS_KEY=<Your AWS_SECRET_ACCESS_KEY>
+[lab-user@clientvm 0 ~]$ export S3_ENDPOINT=<Your ExternalDNS address>
+----
+.例
+----
+[lab-user@clientvm 0 ~]$ export AWS_ACCESS_KEY_ID=rQNcbCCIGxkApCA3U8TB
+[lab-user@clientvm 0 ~]$ export AWS_SECRET_ACCESS_KEY=V9qxglxRrJETkmEFBo04aWYu8Jpp6IBMS9w73fQr
+[lab-user@clientvm 0 ~]$ export S3_ENDPOINT=https://s3-openshift-storage.apps.cluster-ocs-18dd.ocs-18dd.example.opentlc.com
+----
+
+
+ここでbucketの一覧を見てみます。bastionサーバーにはaws CLIがインストールされているので、`aws` コマンドを使用します。
+----
+[lab-user@clientvm 0 ~]$ aws --endpoint $S3_ENDPOINT s3 ls --no-verify-ssl
+----
+.出力例
+----
+/usr/local/aws/lib/python2.7/site-packages/urllib3/connectionpool.py:1004: InsecureRequestWarning: Unverified HTTPS request is being made to host 's3-openshift-storage.apps.cluster-0d71.0d71.sandbox525.opentlc.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+2019-11-20 18:01:07 first.bucket
+----
+
+`first.bucket` というbucketがあることがわかります。これはMCGが構成されるときにデフォルトで作成されるbucketです。
+
+先の `noobaa status` の出力の `Backing Stores` を見てみましょう。MCGのデフォルトのBacking StoreはAWS S3となっています。つまり `first.bucket` は AWS
 
 Openshift Web ConsoleのObject Service Dashboardを使用することでも、MCGステータスの概要を取得できます。
 このDashboardではS3 endpointの接続情報を提供しませんが、S3バックエンドの使用に関するグラフとランタイム情報を提供します。
@@ -914,19 +983,15 @@ Object Bucket Claim (OBC) を使用することで、S3互換なbucketのバッ�
 OBCを作成すると、アプリケーションがオブジェクトストレージサービスを使用するために必要なすべての情報を含むConfigMap (CM）とSecretが取得できます。
 
 OBCの作成はNooBaa CLIを利用することで簡単に行えます。
-
-
 ----
 noobaa obc create test21obc -n openshift-storage
 ----
 .出力例:
 ----
-INFO[0001] ✅ Created: ObjectBucketClaim "test21obc"
+INFO[0000] ✅ Created: ObjectBucketClaim "test21obc"
+...
 ----
-
 NooBaa CLIによって作られたOBCはOpenShiftからも確認できます。
-
-
 ----
 oc get obc -n openshift-storage
 ----
@@ -935,13 +1000,11 @@ oc get obc -n openshift-storage
 NAME        STORAGE-CLASS                 PHASE   AGE
 test21obc   openshift-storage.noobaa.io   Bound   38s
 ----
-
-
 ----
 oc get obc test21obc -o yaml -n openshift-storage
 ----
 .出力例:
-[source,yaml,linenums]
+[source,yaml]
 ----
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
@@ -967,10 +1030,8 @@ spec:
 status:
   phase: Bound
 ----
-
-`openshift-storage` namespaceの中に、このOBCを使用するためのSecretとCMがあります。
+`openshift-storage` namespaceの中に、このOBCを使用するためのSecretとConfigMapがありますのでこれらを確認します。
 SecretとConfigMapの名前はOBCと同じです。
-
 
 ----
 oc get -n openshift-storage secret test21obc -o yaml
@@ -1005,7 +1066,6 @@ metadata:
   uid: 65117c1c-f662-11e9-9094-0a5305de57bb
 type: Opaque
 ----
-
 
 ----
 oc get -n openshift-storage cm test21obc -o yaml
@@ -1043,9 +1103,9 @@ metadata:
   uid: 651c6501-f662-11e9-9094-0a5305de57bb
 ----
 
-この通り、SecretはS3アクセス認証情報を提供し、CMはアプリケーションのS3 endpointの情報を含んでいます。
+以上のようにSecretはS3アクセス用の認証情報を提供し、ConfigMapはアプリケーションのS3 endpointの情報を含んでいます。
 
-=== コンテナ内でOBCを使用する
+=== PodでOBCを使用する
 
 このセクションでは、YAMLファイルを使用してOBCを作成し、サンプルアプリケーションで提供されるS3構成を使用する方法を説明します。
 
@@ -1119,14 +1179,12 @@ spec:
                 secretKeyRef:
                   name: obc-test
                   key: AWS_SECRET_ACCESS_KEY
-
 ----
 ファイルの2番目の部分( `---` の後)では、OBCと同じ名前のConfigMapとSecretを作成するOBCを作成します( `obc-test` )。
 ファイルの3番目の部分では、s3cmdが事前にインストールされたコンテナをデプロイするジョブを作成します。
 このジョブではS3 endpointの現在のディスク使用量を報告するs3cmdを実行し、終了します。
 
-これを試してみましょう。
-
+それではこれを試してみましょう。
 
 ----
 curl -s https://raw.githubusercontent.com/tutsunom/ocs-training/jp/ocp4ocs4/obc_app_example.yaml | oc apply -f -
@@ -1137,9 +1195,7 @@ namespace/obc-test created
 objectbucketclaim.objectbucket.io/obc-test created
 job.batch/obc-test created
 ----
-
-podが作成、実行され、最終的に `Completed` とマークされることを確認します。
-
+Podが作成、実行され、最終的に `STATUS` が `Completed` になることを確認します。
 ----
 oc get pod -n obc-test -l app=obc-test
 ----
@@ -1170,19 +1226,20 @@ NOTE: `oc` コマンドを使用してobc-testログを取得する場合はpod�
 ほとんどのアプリケーションはネイティブに `AWS_ACCESS_KEY_ID` と `AWS_SECRET_ACCESS_KEY` の環境変数の読み取ることをサポートしていますが、
 各アプリケーションのホスト名とbucket名を設定する方法を知る必要があります。このセクションの例では、s3cmdのCLIフラグを使用しました。
 
+
 == Cephクラスタへのストレージの追加
 
 OCSにストレージを追加することで、容量が追加されパフォーマンスが向上されます。
 
 [NOTE]
 ====
-worker nodeを追加するか、既存のworker nodeを活用してストレージ容量を追加するかを選択できます。
-ストレージにworker nodeを追加するのは、既存のノードに十分なCPUやメモリがない場合などが挙げられます。
+OCS worker node自体を追加するか、既存のOCS worker nodeにストレージ容量を追加するかを選択することができます。
+OCS worker nodeを追加するのは、既存のノードに十分なCPUやメモリがない場合などが挙げられます。
 ====
 
-=== ストレージworker nodeを追加する
+=== OCS worker nodeを追加する
 
-このセクションでは、現在のストレージクラスターにworker nodeを追加する方法について説明します。
+このセクションでは、現在のストレージクラスターOCS worker nodeを追加する方法について説明します。
 その後、OCSクラスターを拡張してこれらの新しいノードにストレージをプロビジョニングする方法に関する次のサブセクションに続きます。
 
 ノードを追加するには、1章のようにmachinesetsを追加するか、既存のOCS machiesetをスケールアップします。
@@ -1222,13 +1279,11 @@ machineset.machine.openshift.io/cluster-tokyo-0f59-7kg4m-workerocs-us-east-2c sc
 
 新しいworker nodeが使用可能になるまで待ちます。
 
-
 ----
 watch oc get machinesets -n openshift-machine-api
 ----
 
 利用可能になったら、次のようにラベルを確認できます。
-
 
 ----
 oc get nodes -o json | jq '.items[] | select(.metadata.labels.role == "storage-node") | .metadata.name,.metadata.labels'
@@ -1293,7 +1348,7 @@ error: 'cluster.ocs.openshift.io/openshift-storage' already has a value (), and 
 
 すでにラベルが適用されているノードでエラーが発生しますが、これは問題ありません。
 これで、クラスターを拡張するための新しいインスタンスを準備できました。
-次の章に進んで、これらの空のインスタンスにストレージをプロビジョニングします。
+次のセクションに進んで、これらの空のインスタンスにストレージをプロビジョニングします。
 
 === ストレージ容量を追加する
 
@@ -1424,7 +1479,7 @@ client: 1.2 KiB/s rd, 46 KiB/s wr, 2 op/s rd, 4 op/s wr
 
 <1> 現在合計6つのOSDを使用しているが、それらは `in` で `up` である。
 (つまり、OSDデーモンが実行されており、ストレージの領域として使用されている）
-<2> 利用可能な物理容量が3 TiBから6 TiBに増加した
+<2> 利用可能な物理容量が6 TiBから12 TiBに増加した
 
 これら以外にはCephステータスの出力は何も変わっていません。
 
