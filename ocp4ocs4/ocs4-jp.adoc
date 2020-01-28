@@ -1364,7 +1364,7 @@ error: 'cluster.ocs.openshift.io/openshift-storage' already has a value (), and 
 image::imgs/OCS-Storage-Cluster-overview-reachit.png[]
 
  - 表示される項目の右端の3つのドットをクリックして、オプションメニューを表示
- - `Add Capacity` を選択
+ - `Add Capacity` を選択し、2 TiB を指定
 
 .容量の追加ダイアログ
 image::imgs/OCS-add-capacity.png[]
