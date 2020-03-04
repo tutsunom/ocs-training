@@ -48,8 +48,8 @@ spec:
           metadata:
             creationTimestamp: null
           placement:
-            availabilityZone: us-east-1a
-            region: us-east-1
+            availabilityZone: ap-southeast-1a
+            region: ap-southeast-1
           publicIp: null
           securityGroups:
           - filters:
@@ -118,8 +118,8 @@ spec:
           metadata:
             creationTimestamp: null
           placement:
-            availabilityZone: us-east-1b
-            region: us-east-1
+            availabilityZone: ap-southeast-1b
+            region: ap-southeast-1
           publicIp: null
           securityGroups:
           - filters:
@@ -188,8 +188,8 @@ spec:
           metadata:
             creationTimestamp: null
           placement:
-            availabilityZone: us-east-1c
-            region: us-east-1
+            availabilityZone: ap-southeast-1c
+            region: ap-southeast-1
           publicIp: null
           securityGroups:
           - filters:
