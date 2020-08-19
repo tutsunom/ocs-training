@@ -1,0 +1,6 @@
+{
+    "asciidoc.forceUnixStyleSeparator": false,
+    "asciidoc.preview.linkify": false,
+    "asciidoc.preview.useEditorStyle": false,
+    "asciidoc.use_asciidoctor_js": false
+}
