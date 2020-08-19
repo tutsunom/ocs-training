@@ -1,0 +1,225 @@
+OpenShift Build myjenkins-1/jax-rs-build-1
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Still waiting to schedule task
+‘Jenkins’ doesn’t have label ‘maven-s’
+Agent maven-s-fp4dd-v8gz3 is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://172.30.196.69:80/job/myjenkins-1/job/myjenkins-1-jax-rs-build/1/"
+  labels:
+    jenkins: "slave"
+    jenkins/maven-s: "true"
+  name: "maven-s-fp4dd-v8gz3"
+spec:
+  containers:
+  - args:
+    - "********"
+    - "maven-s-fp4dd-v8gz3"
+    env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "172.30.104.235:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "maven-s-fp4dd-v8gz3"
+    - name: "JENKINS_NAME"
+      value: "maven-s-fp4dd-v8gz3"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/tmp"
+    - name: "JENKINS_URL"
+      value: "http://172.30.196.69:80/"
+    - name: "HOME"
+      value: "/home/jenkins"
+    image: "image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest"
+    imagePullPolicy: "Always"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests: {}
+    securityContext:
+      privileged: false
+    tty: false
+    volumeMounts:
+    - mountPath: "/home/jenkins/.m2"
+      name: "volume-0"
+      readOnly: false
+    - mountPath: "/tmp"
+      name: "workspace-volume"
+      readOnly: false
+    workingDir: "/tmp"
+  nodeSelector: {}
+  restartPolicy: "Never"
+  serviceAccount: "jenkins"
+  volumes:
+  - name: "volume-0"
+    persistentVolumeClaim:
+      claimName: "dependencies"
+      readOnly: false
+  - emptyDir: {}
+    name: "workspace-volume"
+
+Running on maven-s-fp4dd-v8gz3 in /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Source Checkout)
+[Pipeline] git
+No credentials specified
+Cloning the remote Git repository
+Cloning repository https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git
+ > git init /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build # timeout=10
+Fetching upstream changes from https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git +refs/heads/*:refs/remotes/origin/*
+Checking out Revision fca471770f04a3d9c1e6ad87d523758f9b809f3b (refs/remotes/origin/master)
+ > git config remote.origin.url https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git # timeout=10
+Fetching upstream changes from https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git
+ > git fetch --tags --progress https://github.com/redhat-gpte-devopsautomation/openshift-tasks.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f fca471770f04a3d9c1e6ad87d523758f9b809f3b
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b master fca471770f04a3d9c1e6ad87d523758f9b809f3b
+Commit message: "Change version number from 1.0-0 to 1.0"
+First time build. Skipping changelog.
+[Pipeline] script
+[Pipeline] {
+[Pipeline] readMavenPom
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build JAX-RS)
+[Pipeline] echo
+Building war file
+[Pipeline] sh
++ mvn clean package -DskipTests=true
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] [1mBuilding JBoss EAP - Tasks App 1.0[m
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] 
+[INFO] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mtasks[0;1m ---[m
+[INFO] 
+[INFO] [1m--- [0;32mjacoco-maven-plugin:0.8.2:prepare-agent[m [1m(default-prepare-agent)[m @ [36mtasks[0;1m ---[m
+[INFO] argLine set to -javaagent:/home/jenkins/.m2/repository/org/jacoco/org.jacoco.agent/0.8.2/org.jacoco.agent-0.8.2-runtime.jar=destfile=/tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/jacoco.exec
+[INFO] 
+[INFO] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mtasks[0;1m ---[m
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mtasks[0;1m ---[m
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 11 source files to /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[31,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[32,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[33,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[44,2] cannot find symbol
+  symbol: class XmlRootElement
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[31,22] package javax.xml.bind does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[32,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[33,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[34,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[35,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[45,2] cannot find symbol
+  symbol: class XmlRootElement
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[65,6] cannot find symbol
+  symbol:   class XmlAttribute
+  location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[74,6] cannot find symbol
+  symbol:   class XmlAttribute
+  location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[83,6] cannot find symbol
+  symbol:   class XmlTransient
+  location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[65,6] cannot find symbol
+  symbol:   class XmlAttribute
+  location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[74,6] cannot find symbol
+  symbol:   class XmlTransient
+  location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[80,6] cannot find symbol
+  symbol:   class XmlAttribute
+  location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[89,6] cannot find symbol
+  symbol:   class XmlElement
+  location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[137,16] cannot find symbol
+  symbol:   variable JAXB
+  location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[INFO] 18 errors 
+[INFO] -------------------------------------------------------------
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] [1;31mBUILD FAILURE[m
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] Total time: 2.187 s
+[INFO] Finished at: 2020-04-08T03:48:26Z
+[INFO] Final Memory: 22M/951M
+[INFO] [1m------------------------------------------------------------------------[m
+[ERROR] Failed to execute goal [32morg.apache.maven.plugins:maven-compiler-plugin:3.1:compile[m [1m(default-compile)[m on project [36mtasks[m: [1;31mCompilation failure[m: Compilation failure: 
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[31,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[32,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[33,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[44,2] cannot find symbol
+[ERROR]   symbol: class XmlRootElement
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[31,22] package javax.xml.bind does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[32,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[33,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[34,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[35,33] package javax.xml.bind.annotation does not exist
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[45,2] cannot find symbol
+[ERROR]   symbol: class XmlRootElement
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[65,6] cannot find symbol
+[ERROR]   symbol:   class XmlAttribute
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[74,6] cannot find symbol
+[ERROR]   symbol:   class XmlAttribute
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/User.java:[83,6] cannot find symbol
+[ERROR]   symbol:   class XmlTransient
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.User
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[65,6] cannot find symbol
+[ERROR]   symbol:   class XmlAttribute
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[74,6] cannot find symbol
+[ERROR]   symbol:   class XmlTransient
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[80,6] cannot find symbol
+[ERROR]   symbol:   class XmlAttribute
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[89,6] cannot find symbol
+[ERROR]   symbol:   class XmlElement
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/java/org/jboss/as/quickstarts/tasksrs/model/Task.java:[137,16] cannot find symbol
+[ERROR]   symbol:   variable JAXB
+[ERROR]   location: class org.jboss.as.quickstarts.tasksrs.model.Task
+[ERROR] -> [1m[Help 1][m
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
+[ERROR] Re-run Maven using the [1m-X[m switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE

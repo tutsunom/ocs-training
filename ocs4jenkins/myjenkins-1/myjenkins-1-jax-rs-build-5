@@ -1,0 +1,163 @@
+OpenShift Build myjenkins-1/jax-rs-build-5
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Still waiting to schedule task
+‘maven-s-wrlpj-bqqc7’ is offline
+Agent maven-s-wrlpj-bqqc7 is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://172.30.196.69:80/job/myjenkins-1/job/myjenkins-1-jax-rs-build/5/"
+  labels:
+    jenkins: "slave"
+    jenkins/maven-s: "true"
+  name: "maven-s-wrlpj-bqqc7"
+spec:
+  containers:
+  - args:
+    - "********"
+    - "maven-s-wrlpj-bqqc7"
+    env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "172.30.104.235:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "maven-s-wrlpj-bqqc7"
+    - name: "JENKINS_NAME"
+      value: "maven-s-wrlpj-bqqc7"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/tmp"
+    - name: "JENKINS_URL"
+      value: "http://172.30.196.69:80/"
+    - name: "HOME"
+      value: "/home/jenkins"
+    image: "image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest"
+    imagePullPolicy: "Always"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests: {}
+    securityContext:
+      privileged: false
+    tty: false
+    volumeMounts:
+    - mountPath: "/home/jenkins/.m2"
+      name: "volume-0"
+      readOnly: false
+    - mountPath: "/tmp"
+      name: "workspace-volume"
+      readOnly: false
+    workingDir: "/tmp"
+  nodeSelector: {}
+  restartPolicy: "Never"
+  serviceAccount: "jenkins"
+  volumes:
+  - name: "volume-0"
+    persistentVolumeClaim:
+      claimName: "dependencies"
+      readOnly: false
+  - emptyDir: {}
+    name: "workspace-volume"
+
+Running on maven-s-wrlpj-bqqc7 in /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Source Checkout)
+[Pipeline] git
+No credentials specified
+Cloning the remote Git repository
+Cloning repository https://github.com/tutsunom/openshift-tasks.git
+ > git init /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build # timeout=10
+Fetching upstream changes from https://github.com/tutsunom/openshift-tasks.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/tutsunom/openshift-tasks.git +refs/heads/*:refs/remotes/origin/*
+Checking out Revision e7e15e608b7c975b621c1784c726af0578ae086d (refs/remotes/origin/master)
+ > git config remote.origin.url https://github.com/tutsunom/openshift-tasks.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/tutsunom/openshift-tasks.git # timeout=10
+Fetching upstream changes from https://github.com/tutsunom/openshift-tasks.git
+ > git fetch --tags --progress https://github.com/tutsunom/openshift-tasks.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f e7e15e608b7c975b621c1784c726af0578ae086d
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b master e7e15e608b7c975b621c1784c726af0578ae086d
+Commit message: "Update pom.xml"
+ > git rev-list --no-walk e7e15e608b7c975b621c1784c726af0578ae086d # timeout=10
+[Pipeline] script
+[Pipeline] {
+[Pipeline] readMavenPom
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build JAX-RS)
+[Pipeline] echo
+Building war file
+[Pipeline] sh
++ mvn clean package -DskipTests=true
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] [1mBuilding JBoss EAP - Tasks App 1.0[m
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] 
+[INFO] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mtasks[0;1m ---[m
+[INFO] 
+[INFO] [1m--- [0;32mjacoco-maven-plugin:0.8.2:prepare-agent[m [1m(default-prepare-agent)[m @ [36mtasks[0;1m ---[m
+[INFO] argLine set to -javaagent:/home/jenkins/.m2/repository/org/jacoco/org.jacoco.agent/0.8.2/org.jacoco.agent-0.8.2-runtime.jar=destfile=/tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/jacoco.exec
+[INFO] 
+[INFO] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mtasks[0;1m ---[m
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mtasks[0;1m ---[m
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 11 source files to /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/classes
+[INFO] 
+[INFO] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mtasks[0;1m ---[m
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36mtasks[0;1m ---[m
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 7 source files to /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/test-classes
+[WARNING] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/test/java/org/jboss/as/quickstarts/tasksrs/service/UserResourceTest.java: Some input files use or override a deprecated API.
+[WARNING] /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/test/java/org/jboss/as/quickstarts/tasksrs/service/UserResourceTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] [1m--- [0;32mmaven-surefire-plugin:2.22.1:test[m [1m(default-test)[m @ [36mtasks[0;1m ---[m
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] [1m--- [0;32mjacoco-maven-plugin:0.8.2:report[m [1m(default-report)[m @ [36mtasks[0;1m ---[m
+[INFO] Skipping JaCoCo execution due to missing execution data file.
+[INFO] 
+[INFO] [1m--- [0;32mmaven-war-plugin:3.2.2:war[m [1m(default-war)[m @ [36mtasks[0;1m ---[m
+[INFO] Packaging webapp
+[INFO] Assembling webapp [tasks] in [/tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/openshift-tasks]
+[INFO] Processing war project
+[INFO] Copying webapp resources [/tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/src/main/webapp]
+[INFO] Webapp assembled in [71 msecs]
+[INFO] Building war: /tmp/workspace/myjenkins-1/myjenkins-1-jax-rs-build/target/openshift-tasks.war
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] [1;32mBUILD SUCCESS[m
+[INFO] [1m------------------------------------------------------------------------[m
+[INFO] Total time: 3.649 s
+[INFO] Finished at: 2020-04-08T03:54:28Z
+[INFO] Final Memory: 30M/951M
+[INFO] [1m------------------------------------------------------------------------[m
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+Finished: SUCCESS
