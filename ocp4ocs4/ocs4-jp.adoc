@@ -28,7 +28,7 @@
 * OCSのモニタリングを行う
 
 .OpenShift Container Storage コンポーネント
-image::imgs/OCS-Pods-Diagram.png[Showing OCS4 pods]
+image::imgs~origin/OCS-Pods-Diagram.png[Showing OCS4 pods]
 
 == OCS Operatorを使用してCephストレージバックエンドをデプロイする
 
